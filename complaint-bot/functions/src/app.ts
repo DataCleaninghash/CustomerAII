@@ -22,6 +22,7 @@ import SigninService from './modules/auth/signin';
 import cors from 'cors';
 import { BlandAIClient } from './modules/callOrchestration/blandAIClient';
 import { EmailManager } from './modules/notifications/emailManager';
+import path from 'path';
 
 dotenv.config();
 
@@ -584,6 +585,14 @@ app.post('/execute-both', async (req, res) => {
     console.error('Error in /execute-both:', error);
     res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
   }
+});
+
+// Serve React build static files
+app.use(express.static(path.join(__dirname, '../../front-end/resolve_buddy_ai/build')));
+
+// Catch-all route to serve index.html for React Router
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../front-end/resolve_buddy_ai/build', 'index.html'));
 });
 
 // Create HTTP server and attach WebSocket
