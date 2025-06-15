@@ -91,7 +91,7 @@ export class ComplaintResolutionSystem {
       // Only update conversation history and generate next question
       console.log('🔄 [Follow-up] Updating conversation history for complaint:', complaintId);
       try {
-        await conversationManager.processAnswer(complaintId, questionId, answer);
+      await conversationManager.processAnswer(complaintId, questionId, answer);
       } catch (err) {
         console.error('Follow-up failed, aborting request', err);
         return { success: false, message: 'Could not save your answer, please retry' };
