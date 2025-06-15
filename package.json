@@ -13,5 +13,11 @@
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0"
+  },
+  "scripts": {
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd front-end/resolve_buddy_ai && npm install && npm run build",
+    "build:backend": "cd complaint-bot/functions && npm install && npm run build",
+    "start": "cd complaint-bot/functions && npm start"
   }
 }
