@@ -588,8 +588,8 @@ app.post('/execute-both', async (req, res) => {
   }
 });
 
-// Correct path to frontend build (no 'complaint-bot' in path)
-const frontendBuildPath = path.join(__dirname, '..', 'front-end', 'resolve_buddy_ai', 'build');
+// Correct path to frontend build (front-end is outside complaint-bot)
+const frontendBuildPath = path.join(__dirname, '..', '..', '..', 'front-end', 'resolve_buddy_ai', 'build');
 const indexPath = path.join(frontendBuildPath, 'index.html');
 
 console.log('Looking for frontend at:', frontendBuildPath);
