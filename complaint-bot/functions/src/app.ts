@@ -23,6 +23,7 @@ import cors from 'cors';
 import { BlandAIClient } from './modules/callOrchestration/blandAIClient';
 import { EmailManager } from './modules/notifications/emailManager';
 import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -587,12 +588,26 @@ app.post('/execute-both', async (req, res) => {
   }
 });
 
-// Serve React build static files
-app.use(express.static(path.join(__dirname, '../../front-end/resolve_buddy_ai/build')));
+// Robust path resolution for frontend build
+const frontendBuildPath = path.join(__dirname, '..', '..', 'front-end', 'resolve_buddy_ai', 'build');
+const indexPath = path.join(frontendBuildPath, 'index.html');
+
+console.log('Backend __dirname:', __dirname);
+console.log('Resolved frontend build path:', frontendBuildPath);
+console.log('Resolved index.html path:', indexPath);
+console.log('Build folder exists:', fs.existsSync(frontendBuildPath));
+console.log('index.html exists:', fs.existsSync(indexPath));
+
+// Serve static files
+app.use(express.static(frontendBuildPath));
 
 // Catch-all route to serve index.html for React Router
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../front-end/resolve_buddy_ai/build', 'index.html'));
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('Frontend build not found. Path: ' + indexPath);
+  }
 });
 
 // Create HTTP server and attach WebSocket
