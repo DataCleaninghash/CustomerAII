@@ -47,6 +47,47 @@ const PUBLIC_URL = process.env.PUBLIC_URL!;
 const signupService = new SignupService();
 const signinService = new SigninService();
 
+// Function to find the project root by looking for 'front-end' directory
+const findProjectRoot = (startPath: string): string | null => {
+  let currentPath = startPath;
+  while (currentPath !== path.parse(currentPath).root) {
+    if (fs.existsSync(path.join(currentPath, 'front-end'))) {
+      return currentPath;
+    }
+    currentPath = path.dirname(currentPath);
+  }
+  return null;
+};
+
+// Find project root dynamically
+const projectRoot = findProjectRoot(__dirname);
+console.log('Project root found at:', projectRoot);
+
+// Now construct the frontend path
+const frontendBuildPath = projectRoot
+  ? path.join(projectRoot, 'front-end', 'resolve_buddy_ai', 'build')
+  : null;
+const indexPath = frontendBuildPath ? path.join(frontendBuildPath, 'index.html') : null;
+
+if (frontendBuildPath && fs.existsSync(frontendBuildPath)) {
+  console.log('✅ Frontend build found at:', frontendBuildPath);
+  app.use(express.static(frontendBuildPath));
+  // Place API routes here if needed
+  // app.use('/api', yourApiRoutes);
+  app.get('*', (req, res) => {
+    res.sendFile(indexPath!);
+  });
+} else {
+  console.error('❌ Frontend build not found');
+  app.get('*', (req, res) => {
+    res.status(503).json({
+      error: 'Frontend build not found',
+      hint: 'Make sure frontend is built',
+      searchedPath: frontendBuildPath
+    });
+  });
+}
+
 // Helper to format phone number to E.164 (US default)
 function toE164(phone: string, defaultCountry = 'US'): string | null {
   if (!phone) return null;
@@ -587,31 +628,6 @@ app.post('/execute-both', async (req, res) => {
     res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
-
-// Correct path to frontend build (front-end is outside complaint-bot)
-const frontendBuildPath = path.join(__dirname, '..', '..', '..', 'front-end', 'resolve_buddy_ai', 'build');
-const indexPath = path.join(frontendBuildPath, 'index.html');
-
-console.log('Looking for frontend at:', frontendBuildPath);
-console.log('Frontend exists?', fs.existsSync(frontendBuildPath));
-console.log('index.html exists?', fs.existsSync(indexPath));
-
-if (fs.existsSync(frontendBuildPath)) {
-  app.use(express.static(frontendBuildPath));
-  app.get('*', (req, res) => {
-    res.sendFile(indexPath);
-  });
-} else {
-  app.get('*', (req, res) => {
-    const debugInfo = {
-      error: 'Frontend build not found',
-      searchedPath: frontendBuildPath,
-      currentDir: __dirname,
-      parentDirContents: fs.readdirSync(path.join(__dirname, '..'))
-    };
-    res.status(404).json(debugInfo);
-  });
-}
 
 // Create HTTP server and attach WebSocket
 const server = http.createServer(app);
