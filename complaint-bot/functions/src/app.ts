@@ -588,27 +588,30 @@ app.post('/execute-both', async (req, res) => {
   }
 });
 
-// Robust path resolution for frontend build
-const frontendBuildPath = path.join(__dirname, '..', '..', 'front-end', 'resolve_buddy_ai', 'build');
+// Correct path to frontend build (no 'complaint-bot' in path)
+const frontendBuildPath = path.join(__dirname, '..', 'front-end', 'resolve_buddy_ai', 'build');
 const indexPath = path.join(frontendBuildPath, 'index.html');
 
-console.log('Backend __dirname:', __dirname);
-console.log('Resolved frontend build path:', frontendBuildPath);
-console.log('Resolved index.html path:', indexPath);
-console.log('Build folder exists:', fs.existsSync(frontendBuildPath));
-console.log('index.html exists:', fs.existsSync(indexPath));
+console.log('Looking for frontend at:', frontendBuildPath);
+console.log('Frontend exists?', fs.existsSync(frontendBuildPath));
+console.log('index.html exists?', fs.existsSync(indexPath));
 
-// Serve static files
-app.use(express.static(frontendBuildPath));
-
-// Catch-all route to serve index.html for React Router
-app.get('*', (req, res) => {
-  if (fs.existsSync(indexPath)) {
+if (fs.existsSync(frontendBuildPath)) {
+  app.use(express.static(frontendBuildPath));
+  app.get('*', (req, res) => {
     res.sendFile(indexPath);
-  } else {
-    res.status(404).send('Frontend build not found. Path: ' + indexPath);
-  }
-});
+  });
+} else {
+  app.get('*', (req, res) => {
+    const debugInfo = {
+      error: 'Frontend build not found',
+      searchedPath: frontendBuildPath,
+      currentDir: __dirname,
+      parentDirContents: fs.readdirSync(path.join(__dirname, '..'))
+    };
+    res.status(404).json(debugInfo);
+  });
+}
 
 // Create HTTP server and attach WebSocket
 const server = http.createServer(app);
