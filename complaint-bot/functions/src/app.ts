@@ -48,7 +48,7 @@ const signupService = new SignupService();
 const signinService = new SigninService();
 
 // Go up 3 levels from dist to project root, then into front-end/resolve_buddy_ai/build
-const frontendBuildPath = path.join(__dirname, '..', '..', '..', 'front-end', 'resolve_buddy_ai', 'build');
+const frontendBuildPath = path.join(__dirname, '..', '..', '..', 'front-end', 'resolve_buddy_ai', 'dist');
 
 console.log('Current directory:', __dirname);
 console.log('Looking for frontend at:', frontendBuildPath);
