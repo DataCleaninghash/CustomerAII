@@ -33,8 +33,25 @@ if (!admin.apps.length) {
 }
 
 const app = express();
-app.use(cors());
-app.options('*', cors());
+
+// HTTPS redirect middleware (for Render or similar platforms)
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect('https://' + req.headers.host + req.url);
+  }
+  next();
+});
+
+// CORS settings for production domain
+const allowedOrigins = [
+  'https://www.voceo.app',
+  'https://voceo.app'
+];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -47,7 +64,7 @@ const PUBLIC_URL = process.env.PUBLIC_URL!;
 const signupService = new SignupService();
 const signinService = new SigninService();
 
-// Go up 3 levels from dist to project root, then into front-end/resolve_buddy_ai/build
+// Go up 3 levels from dist to project root, then into front-end/resolve_buddy_ai/dist
 const frontendBuildPath = path.join(__dirname, '..', '..', '..', 'front-end', 'resolve_buddy_ai', 'dist');
 
 console.log('Current directory:', __dirname);
