@@ -47,43 +47,50 @@ const PUBLIC_URL = process.env.PUBLIC_URL!;
 const signupService = new SignupService();
 const signinService = new SigninService();
 
-// Function to find the project root by looking for 'front-end' directory
-const findProjectRoot = (startPath: string): string | null => {
-  let currentPath = startPath;
-  while (currentPath !== path.parse(currentPath).root) {
-    if (fs.existsSync(path.join(currentPath, 'front-end'))) {
-      return currentPath;
-    }
-    currentPath = path.dirname(currentPath);
+// Go up 3 levels from dist to project root, then into front-end/resolve_buddy_ai/build
+const frontendBuildPath = path.join(__dirname, '..', '..', '..', 'front-end', 'resolve_buddy_ai', 'build');
+
+console.log('Current directory:', __dirname);
+console.log('Looking for frontend at:', frontendBuildPath);
+console.log('Frontend exists?', fs.existsSync(frontendBuildPath));
+
+// Debug: Directory explorer
+const explorePath = (dir: string, level = 0) => {
+  const indent = '  '.repeat(level);
+  try {
+    const items = fs.readdirSync(dir);
+    items.forEach(item => {
+      const fullPath = path.join(dir, item);
+      const stats = fs.statSync(fullPath);
+      console.log(`${indent}${stats.isDirectory() ? '[D]' : '[F]'} ${item}`);
+      if (stats.isDirectory() && level < 3 && !item.includes('node_modules')) {
+        explorePath(fullPath, level + 1);
+      }
+    });
+  } catch (e) {
+    console.log(`${indent}[ERROR] Cannot read: ${dir}`);
   }
-  return null;
 };
+console.log('=== Directory Structure from app.js ===');
+console.log('Starting from:', __dirname);
+explorePath(path.join(__dirname, '..', '..', '..'), 0);
 
-// Find project root dynamically
-const projectRoot = findProjectRoot(__dirname);
-console.log('Project root found at:', projectRoot);
+// Place your API routes here
+// app.use('/api', yourApiRoutes);
 
-// Now construct the frontend path
-const frontendBuildPath = projectRoot
-  ? path.join(projectRoot, 'front-end', 'resolve_buddy_ai', 'build')
-  : null;
-const indexPath = frontendBuildPath ? path.join(frontendBuildPath, 'index.html') : null;
-
-if (frontendBuildPath && fs.existsSync(frontendBuildPath)) {
-  console.log('✅ Frontend build found at:', frontendBuildPath);
+// Serve static files if they exist
+if (fs.existsSync(frontendBuildPath)) {
   app.use(express.static(frontendBuildPath));
-  // Place API routes here if needed
-  // app.use('/api', yourApiRoutes);
   app.get('*', (req, res) => {
-    res.sendFile(indexPath!);
+    res.sendFile(path.join(frontendBuildPath, 'index.html'));
   });
 } else {
-  console.error('❌ Frontend build not found');
   app.get('*', (req, res) => {
     res.status(503).json({
       error: 'Frontend build not found',
-      hint: 'Make sure frontend is built',
-      searchedPath: frontendBuildPath
+      currentDir: __dirname,
+      searchedPath: frontendBuildPath,
+      hint: 'Frontend needs to be built first'
     });
   });
 }
