@@ -1,5 +1,8 @@
 // API service layer for backend communication
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+// Use relative path for API calls in production
+const API_BASE_URL = import.meta.env.MODE === 'development'
+  ? (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000')
+  : '';
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
