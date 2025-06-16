@@ -15,9 +15,10 @@
     "@types/uuid": "^10.0.0"
   },
   "scripts": {
-    "build": "npm run build:frontend && npm run build:backend",
+    "build": "npm run build:frontend && npm run build:backend && npm run verify",
     "build:frontend": "cd front-end/resolve_buddy_ai && npm install && npm run build",
     "build:backend": "cd complaint-bot/functions && npm install && npm run build",
+    "verify": "node -e \"const fs=require('fs'); console.log('Build exists:', fs.existsSync('./front-end/resolve_buddy_ai/build/index.html'))\"",
     "start": "cd complaint-bot/functions && npm start"
   }
 }
