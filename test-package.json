@@ -1,0 +1,19 @@
+{
+  "name": "contact-list-test",
+  "version": "1.0.0",
+  "description": "Test script for contact list functionality",
+  "main": "test-contact-lists.js",
+  "scripts": {
+    "test": "node test-contact-lists.js",
+    "test:local": "node test-contact-lists.js http://localhost:3000",
+    "install-deps": "npm install node-fetch form-data"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0",
+    "form-data": "^4.0.0"
+  },
+  "keywords": ["test", "contact-list", "api"],
+  "author": "",
+  "license": "MIT"
+}
+
